@@ -108,7 +108,7 @@ execModuleBuilderT :: Monad m => ModuleBuilderState -> ModuleBuilderT m a -> m [
 execModuleBuilderT s m = snd <$> runModuleBuilderT s m
 
 emitDefn :: MonadModuleBuilder m => Definition -> m ()
-emitDefn def = liftModuleState $ modify $ \s -> s { builderDefs = builderDefs s `snoc` def }
+emitDefn def = liftModuleState $ modify $ \s -> s { builderDefs = builderDefs s `LLVM.IRBuilder.Internal.SnocList.snoc` def }
 
 -- | A parameter name suggestion
 data ParameterName
@@ -119,7 +119,7 @@ data ParameterName
 -- | Using 'fromString` on non-ASCII strings will throw an error.
 instance IsString ParameterName where
   fromString s
-    | all isAscii s = ParameterName (fromString s)
+    | Data.Foldable.all isAscii s = ParameterName (fromString s)
     | otherwise =
       error ("Only ASCII strings are automatically converted to LLVM parameter names. "
       <> "Other strings need to be encoded to a `ShortByteString` using an arbitrary encoding.")
